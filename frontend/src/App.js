@@ -29,12 +29,10 @@ function App() {
     fetchTasks();
   }, [fetchTasks]);
 
-  // Updated to handle empty dates correctly
   const addTask = (e) => {
     e.preventDefault();
     if (!title) return;
     
-    // Create the new task object, sending null for an empty date
     const newTask = {
       title,
       description,
@@ -93,7 +91,8 @@ function App() {
             <div>
               <h3>{task.title}</h3>
               <p>{task.description || 'No description'}</p>
-              <p>Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateTimeString() : 'No due date'}</p>
+              {/* This is the corrected line */}
+              <p>Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}</p>
               <p>Status: <b className={getStatusClass(task.status)}>{task.status}</b></p>
             </div>
             <div className="task-actions">
