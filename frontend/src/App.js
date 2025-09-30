@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './App.css';
-
-const API_URL = process.env.REACT_APP_API_URL || '';
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -10,12 +8,10 @@ function App() {
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+  const apiUrl = process.env.REACT_APP_API_URL || '';
 
-  const fetchTasks = () => {
-    axios.get(`${API_URL}/api/tasks`)
+  const fetchTasks = useCallback(() => {
+    axios.get(`${apiUrl}/api/tasks`)
       .then((res) => {
         if (Array.isArray(res.data)) {
           setTasks(res.data);
@@ -27,12 +23,25 @@ function App() {
         console.error("Error fetching tasks:", err);
         setTasks([]);
       });
-  };
+  }, [apiUrl]);
 
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
+
+  // Updated to handle empty dates correctly
   const addTask = (e) => {
     e.preventDefault();
     if (!title) return;
-    axios.post(`${API_URL}/api/tasks`, { title, description, dueDate })
+    
+    // Create the new task object, sending null for an empty date
+    const newTask = {
+      title,
+      description,
+      dueDate: dueDate || null,
+    };
+    
+    axios.post(`${apiUrl}/api/tasks`, newTask)
       .then(() => {
         fetchTasks();
         setTitle('');
@@ -43,7 +52,7 @@ function App() {
   };
 
   const deleteTask = (id) => {
-    axios.delete(`${API_URL}/api/tasks/${id}`)
+    axios.delete(`${apiUrl}/api/tasks/${id}`)
       .then(() => fetchTasks())
       .catch((err) => console.error("Error deleting task:", err));
   };
@@ -57,14 +66,14 @@ function App() {
     } else {
       newStatus = 'Not Done';
     }
-    axios.put(`${API_URL}/api/tasks/${task._id}`, { ...task, status: newStatus })
+    
+    axios.put(`${apiUrl}/api/tasks/${task._id}`, { ...task, status: newStatus })
       .then(() => fetchTasks())
       .catch((err) => console.error("Error updating task:", err));
   };
 
   const getStatusClass = (status) => {
-    if (!status) return '';
-    return status.toLowerCase().replace(/\s+/g, '-');
+    return status.toLowerCase().replace(' ', '-');
   };
 
   return (
@@ -84,7 +93,7 @@ function App() {
             <div>
               <h3>{task.title}</h3>
               <p>{task.description || 'No description'}</p>
-              <p>Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}</p>
+              <p>Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateTimeString() : 'No due date'}</p>
               <p>Status: <b className={getStatusClass(task.status)}>{task.status}</b></p>
             </div>
             <div className="task-actions">
