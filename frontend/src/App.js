@@ -2,61 +2,69 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
 
+const API_URL = process.env.REACT_APP_API_URL || '';
+
 function App() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [dueDate, setDueDate] = useState(''); // State for the date input
+  const [dueDate, setDueDate] = useState('');
 
   useEffect(() => {
     fetchTasks();
   }, []);
 
   const fetchTasks = () => {
-    axios.get('/api/tasks')
-      .then((res) => setTasks(res.data))
-      .catch((err) => console.error("Error fetching tasks:", err));
+    axios.get(`${API_URL}/api/tasks`)
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setTasks(res.data);
+        } else {
+          setTasks([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching tasks:", err);
+        setTasks([]);
+      });
   };
 
   const addTask = (e) => {
     e.preventDefault();
     if (!title) return;
-    // Include dueDate in the POST request
-    axios.post('/api/tasks', { title, description, dueDate })
+    axios.post(`${API_URL}/api/tasks`, { title, description, dueDate })
       .then(() => {
         fetchTasks();
         setTitle('');
         setDescription('');
-        setDueDate(''); // Reset the date input
+        setDueDate('');
       })
       .catch((err) => console.error("Error adding task:", err));
   };
 
   const deleteTask = (id) => {
-    axios.delete(`/api/tasks/${id}`)
+    axios.delete(`${API_URL}/api/tasks/${id}`)
       .then(() => fetchTasks())
       .catch((err) => console.error("Error deleting task:", err));
   };
 
-  // The new three-stage toggle logic
   const toggleStatus = (task) => {
     let newStatus;
     if (task.status === 'Not Done') {
       newStatus = 'Doing';
     } else if (task.status === 'Doing') {
       newStatus = 'Done';
-    } else { // If status is 'Done'
+    } else {
       newStatus = 'Not Done';
     }
-
-    axios.put(`/api/tasks/${task._id}`, { ...task, status: newStatus })
+    axios.put(`${API_URL}/api/tasks/${task._id}`, { ...task, status: newStatus })
       .then(() => fetchTasks())
       .catch((err) => console.error("Error updating task:", err));
   };
 
-  // Helper function to format the status class name
   const getStatusClass = (status) => {
-    return status.toLowerCase().replace(' ', '-');
+    if (!status) return '';
+    return status.toLowerCase().replace(/\s+/g, '-');
   };
 
   return (
@@ -76,7 +84,6 @@ function App() {
             <div>
               <h3>{task.title}</h3>
               <p>{task.description || 'No description'}</p>
-              {/* Display the due date if it exists */}
               <p>Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}</p>
               <p>Status: <b className={getStatusClass(task.status)}>{task.status}</b></p>
             </div>
