@@ -6,8 +6,8 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- Updated CORS Configuration ---
-// This allows both your local frontend and your deployed Vercel app to make requests.
+// --- Correct CORS Configuration ---
+// This allows both your local computer and your deployed Vercel app to make requests.
 const whitelist = [
   'http://localhost:3000', 
   'https://noahan-web-tech-project2-s5csegamma-tau.vercel.app'
@@ -15,7 +15,8 @@ const whitelist = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || whitelist.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
