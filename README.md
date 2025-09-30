@@ -1,0 +1,2 @@
+soo basically my Web Tech teach gave us an assignment and this is that assignment - I took a lot of help from stackoverflow, AI, PPT from my teach, documentations,notes from me,notes from my classmates,etc and literally everything else I can get my hands on.
+finally I completed this at 3am on a holiday. So please give me a full grade for this dear WebTech Professor. Spend sooo time and energy and effort on this. Thank you !
